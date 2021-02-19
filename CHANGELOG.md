@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.16.2 (02/23/2021)
+
+### Bug Fixes:
+
+- [#554](https://github.com/greenplum-db/pxf/pull/554) Fix different encoding when using LineRecordReader
+- [#553](https://github.com/greenplum-db/pxf/pull/553) Hardcode replicas in fragment
+- [#549](https://github.com/greenplum-db/pxf/pull/549) pxfbridge: Return early when context->current_fragment is NULL
+
 ## 5.16.1 (01/14/2021)
 
 ### Bug Fixes:
