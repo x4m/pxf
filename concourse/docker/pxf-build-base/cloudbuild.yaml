@@ -36,9 +36,9 @@ steps:
 # Push the pxf-build-dependencies.tar.gz tarball to Google Cloud Storage
 - name: 'gcr.io/cloud-builders/gsutil'
   id: pxf-build-dependencies-tarball
-  args: ['cp', '/workspace/build/pxf-build-dependencies.tar.gz', 'gs://${_PXF_BUILD_BUCKET}/build-dependencies/pxf-build-dependencies.tar.gz']
+  args: ['cp', '/workspace/build/pxf-build-dependencies.tar.gz', 'gs://${_PXF_BUILD_BUCKET}/build-dependencies/pxf-5/pxf-build-dependencies.tar.gz']
 
 # Push the pxf-automation-dependencies.tar.gz tarball to Google Cloud Storage
 - name: 'gcr.io/cloud-builders/gsutil'
   id: pxf-automation-dependencies-tarball
-  args: ['cp', '/workspace/build/pxf-automation-dependencies.tar.gz', 'gs://${_PXF_BUILD_BUCKET}/automation-dependencies/pxf-automation-dependencies.tar.gz']
+  args: ['cp', '/workspace/build/pxf-automation-dependencies.tar.gz', 'gs://${_PXF_BUILD_BUCKET}/automation-dependencies/pxf-5/pxf-automation-dependencies.tar.gz']
