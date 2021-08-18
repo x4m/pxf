@@ -26,6 +26,7 @@ import org.greenplum.pxf.api.OneRow;
 import org.greenplum.pxf.api.io.Writable;
 import org.greenplum.pxf.api.model.RequestContext;
 import org.greenplum.pxf.api.utilities.AccessorFactory;
+import org.greenplum.pxf.service.utilities.GSSFailureHandler;
 import org.greenplum.pxf.api.utilities.ResolverFactory;
 import org.greenplum.pxf.service.BridgeInputBuilder;
 
@@ -49,14 +50,14 @@ public class WriteBridge extends BaseBridge {
         inputBuilder = new BridgeInputBuilder(context);
     }
 
-    WriteBridge(RequestContext context, AccessorFactory accessorFactory, ResolverFactory resolverFactory) {
-        super(context, accessorFactory, resolverFactory);
+    WriteBridge(RequestContext context, AccessorFactory accessorFactory, ResolverFactory resolverFactory, GSSFailureHandler failureHandler) {
+        super(context, accessorFactory, resolverFactory, failureHandler);
         inputBuilder = new BridgeInputBuilder(context);
     }
 
     @Override
     public boolean beginIteration() throws Exception {
-        return accessor.openForWrite();
+        return failureHandler.execute(accessor.getConfiguration(), "begin iteration", accessor::openForWrite, this::beforeRetryCallback);
     }
 
     /*

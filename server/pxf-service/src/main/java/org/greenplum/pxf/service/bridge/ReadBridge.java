@@ -24,6 +24,7 @@ import org.greenplum.pxf.api.OneRow;
 import org.greenplum.pxf.api.io.Writable;
 import org.greenplum.pxf.api.model.RequestContext;
 import org.greenplum.pxf.api.utilities.AccessorFactory;
+import org.greenplum.pxf.service.utilities.GSSFailureHandler;
 import org.greenplum.pxf.api.utilities.ResolverFactory;
 import org.greenplum.pxf.service.BridgeOutputBuilder;
 
@@ -56,11 +57,11 @@ public class ReadBridge extends BaseBridge {
      * @param context input containing accessor and resolver names
      */
     public ReadBridge(RequestContext context) {
-        this(context, AccessorFactory.getInstance(), ResolverFactory.getInstance());
+        this(context, AccessorFactory.getInstance(), ResolverFactory.getInstance(), GSSFailureHandler.getInstance());
     }
 
-    ReadBridge(RequestContext context, AccessorFactory accessorFactory, ResolverFactory resolverFactory) {
-        super(context, accessorFactory, resolverFactory);
+    ReadBridge(RequestContext context, AccessorFactory accessorFactory, ResolverFactory resolverFactory, GSSFailureHandler failureHandler) {
+        super(context, accessorFactory, resolverFactory, failureHandler);
         outputBuilder = new BridgeOutputBuilder(context);
     }
 
@@ -69,7 +70,7 @@ public class ReadBridge extends BaseBridge {
      */
     @Override
     public boolean beginIteration() throws Exception {
-        return accessor.openForRead();
+        return failureHandler.execute(accessor.getConfiguration(), "begin iteration", accessor::openForRead, this::beforeRetryCallback);
     }
 
     protected Deque<Writable> makeOutput(OneRow oneRow) throws Exception {

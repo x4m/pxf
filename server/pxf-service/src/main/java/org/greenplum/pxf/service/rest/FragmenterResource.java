@@ -34,6 +34,7 @@ import org.greenplum.pxf.service.HttpRequestParser;
 import org.greenplum.pxf.service.RequestParser;
 import org.greenplum.pxf.service.SessionId;
 import org.greenplum.pxf.service.utilities.AnalyzeUtils;
+import org.greenplum.pxf.service.utilities.GSSFailureHandler;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
@@ -61,9 +62,10 @@ import static org.greenplum.pxf.api.model.RequestContext.RequestType;
 @Path("/" + Version.PXF_PROTOCOL_VERSION + "/Fragmenter/")
 public class FragmenterResource extends BaseResource {
 
-    private FragmenterFactory fragmenterFactory;
+    private final GSSFailureHandler failureHandler;
+    private final FragmenterFactory fragmenterFactory;
 
-    private FragmenterCacheFactory fragmenterCacheFactory;
+    private final FragmenterCacheFactory fragmenterCacheFactory;
 
     // Records the startTime of the fragmenter call
     private long startTime;
@@ -72,15 +74,17 @@ public class FragmenterResource extends BaseResource {
     private boolean didThreadProcessFragmentCall;
 
     public FragmenterResource() {
-        this(HttpRequestParser.getInstance(), FragmenterFactory.getInstance(), FragmenterCacheFactory.getInstance());
+        this(HttpRequestParser.getInstance(), FragmenterFactory.getInstance(), FragmenterCacheFactory.getInstance(), GSSFailureHandler.getInstance());
     }
 
     FragmenterResource(RequestParser<HttpHeaders> parser,
                        FragmenterFactory fragmenterFactory,
-                       FragmenterCacheFactory fragmenterCacheFactory) {
+                       FragmenterCacheFactory fragmenterCacheFactory,
+                       GSSFailureHandler failureHandler) {
         super(RequestType.FRAGMENTER, parser);
         this.fragmenterFactory = fragmenterFactory;
         this.fragmenterCacheFactory = fragmenterCacheFactory;
+        this.failureHandler = failureHandler;
         if (LOG.isDebugEnabled() && Utilities.isFragmenterCacheEnabled()) {
             LOG.debug("fragmentCache size={}, stats={}",
                     fragmenterCacheFactory.getCache().size(),
@@ -183,7 +187,15 @@ public class FragmenterResource extends BaseResource {
 
     private List<Fragment> getFragments(RequestContext context) throws Exception {
         /* Create a fragmenter instance with API level parameters */
-        List<Fragment> fragments = AnalyzeUtils.getSampleFragments(fragmenterFactory.getPlugin(context).getFragments(), context);
+        Fragmenter fragmenter = fragmenterFactory.getPlugin(context);
+        // We can't support lambdas here because asm version doesn't support it
+        List<Fragment> fragments = failureHandler.execute(fragmenter.getConfiguration(), "get fragments", new Callable<List<Fragment>>() {
+            @Override
+            public List<Fragment> call() throws Exception {
+                return fragmenter.getFragments();
+            }
+        });
+        fragments = AnalyzeUtils.getSampleFragments(fragments, context);
 
         logFragmentStatistics(Level.INFO, context, fragments);
         return fragments;
