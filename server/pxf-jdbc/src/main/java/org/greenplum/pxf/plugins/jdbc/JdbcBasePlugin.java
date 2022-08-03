@@ -64,6 +64,14 @@ public class JdbcBasePlugin extends BasePlugin {
     private static final int DEFAULT_MYSQL_FETCH_SIZE = Integer.MIN_VALUE;
     private static final int DEFAULT_POOL_SIZE = 1;
 
+    private static final int DEFAULT_CONNECTION_POOL_MAXIMUM_SIZE = 15;
+
+    private static final int DEFAULT_CONNECTION_POOL_CONNECTION_TIMEOUT = 30000;
+
+    private static final int DEFAULT_CONNECTION_POOL_IDLE_TIMEOUT = 30000;
+
+    private static final int DEFAULT_CONNECTION_POOL_MINIMUM_IDLE = 0;
+
     // configuration parameter names
     private static final String JDBC_DRIVER_PROPERTY_NAME = "jdbc.driver";
     private static final String JDBC_URL_PROPERTY_NAME = "jdbc.url";
@@ -79,6 +87,10 @@ public class JdbcBasePlugin extends BasePlugin {
     private static final String JDBC_STATEMENT_BATCH_SIZE_PROPERTY_NAME = "jdbc.statement.batchSize";
     private static final String JDBC_STATEMENT_FETCH_SIZE_PROPERTY_NAME = "jdbc.statement.fetchSize";
     private static final String JDBC_STATEMENT_QUERY_TIMEOUT_PROPERTY_NAME = "jdbc.statement.queryTimeout";
+    private static final String JDBC_POOL_MAXIMUM_POOL_SIZE_PROPERTY_NAME = "jdbc.pool.property.maximumPoolSize";
+    private static final String JDBC_POOL_CONNECTION_TIMEOUT_PROPERTY_NAME = "jdbc.pool.property.connectionTimeout";
+    private static final String JDBC_POOL_IDLE_TIMEOUT_PROPERTY_NAME = "jdbc.pool.property.idleTimeout";
+    private static final String JDBC_POOL_MINIMUM_IDLE_PROPERTY_NAME = "jdbc.pool.property.minimumIdle";
 
     // connection pool properties
     private static final String JDBC_CONNECTION_POOL_ENABLED_PROPERTY_NAME = "jdbc.pool.enabled";
@@ -137,6 +149,18 @@ public class JdbcBasePlugin extends BasePlugin {
 
     // Query timeout.
     protected Integer queryTimeout;
+
+    // Maximum connection pool size.
+    protected Integer poolMaximumSize;
+
+    // Connection timeout in the pool.
+    protected Integer poolConnectionTimeout;
+
+    // Idle timeout for the pool.
+    protected Integer poolIdleTimeout;
+
+    // Minimum pool idle.
+    protected Integer poolMinimumIdle;
 
     // Quote columns setting set by user (three values are possible)
     protected Boolean quoteColumns = null;
@@ -246,16 +270,11 @@ public class JdbcBasePlugin extends BasePlugin {
 
         poolSize = context.getOption("POOL_SIZE", DEFAULT_POOL_SIZE);
 
-        String queryTimeoutString = configuration.get(JDBC_STATEMENT_QUERY_TIMEOUT_PROPERTY_NAME);
-        if (StringUtils.isNotBlank(queryTimeoutString)) {
-            try {
-                queryTimeout = Integer.parseUnsignedInt(queryTimeoutString);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(String.format(
-                        "Property %s has incorrect value %s : must be a non-negative integer",
-                        JDBC_STATEMENT_QUERY_TIMEOUT_PROPERTY_NAME, queryTimeoutString), e);
-            }
-        }
+        queryTimeout = getConfigurationProperty(JDBC_STATEMENT_QUERY_TIMEOUT_PROPERTY_NAME, null);
+        poolMaximumSize = getConfigurationProperty(JDBC_POOL_MAXIMUM_POOL_SIZE_PROPERTY_NAME, DEFAULT_CONNECTION_POOL_MAXIMUM_SIZE);
+        poolConnectionTimeout = getConfigurationProperty(JDBC_POOL_CONNECTION_TIMEOUT_PROPERTY_NAME, DEFAULT_CONNECTION_POOL_CONNECTION_TIMEOUT);
+        poolIdleTimeout = getConfigurationProperty(JDBC_POOL_IDLE_TIMEOUT_PROPERTY_NAME, DEFAULT_CONNECTION_POOL_IDLE_TIMEOUT);
+        poolMinimumIdle = getConfigurationProperty(JDBC_POOL_MINIMUM_IDLE_PROPERTY_NAME, DEFAULT_CONNECTION_POOL_MINIMUM_IDLE);
 
         // Optional parameter. The default value is null
         String quoteColumnsRaw = context.getOption("QUOTE_COLUMNS");
@@ -342,10 +361,10 @@ public class JdbcBasePlugin extends BasePlugin {
         if (isConnectionPoolUsed) {
             poolConfiguration = new Properties();
             // for PXF upgrades where jdbc-site template has not been updated, make sure there're sensible defaults
-            poolConfiguration.setProperty("maximumPoolSize", "15");
-            poolConfiguration.setProperty("connectionTimeout", "30000");
-            poolConfiguration.setProperty("idleTimeout", "30000");
-            poolConfiguration.setProperty("minimumIdle", "0");
+            poolConfiguration.setProperty("maximumPoolSize", poolMaximumSize);
+            poolConfiguration.setProperty("connectionTimeout", poolConnectionTimeout);
+            poolConfiguration.setProperty("idleTimeout", poolIdleTimeout);
+            poolConfiguration.setProperty("minimumIdle", poolMinimumIdle);
             // apply values read from the template
             poolConfiguration.putAll(getPropsWithPrefix(configuration, JDBC_CONNECTION_POOL_PROPERTY_PREFIX));
 
@@ -359,6 +378,21 @@ public class JdbcBasePlugin extends BasePlugin {
             // to switch effective user once connection is established
             poolQualifier = configuration.get(JDBC_POOL_QUALIFIER_PROPERTY_NAME);
         }
+    }
+
+    private static Integer getConfigurationProperty(String propName, Integer defaultValue) throws IllegalArgumentException {
+        result = defaultValue;
+        String propertyValueString = configuration.get(propName);
+        if (StringUtils.isNotBlank(propertyValueString)) {
+            try {
+                result = Integer.parseUnsignedInt(propertyValueString);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(String.format(
+                        "Property %s has incorrect value %s : must be a non-negative integer",
+                        propName, propertyValueString), e);
+            }
+        }
+        return result;
     }
 
     /**
