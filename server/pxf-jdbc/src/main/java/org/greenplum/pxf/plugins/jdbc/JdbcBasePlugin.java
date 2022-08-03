@@ -357,7 +357,6 @@ public class JdbcBasePlugin extends BasePlugin {
 
         // connection pool is optional, enabled by default
         isConnectionPoolUsed = configuration.getBoolean(JDBC_CONNECTION_POOL_ENABLED_PROPERTY_NAME, true);
-        LOG.debug("Connection pool is {}enabled", isConnectionPoolUsed ? "" : "not ");
         if (isConnectionPoolUsed) {
             poolConfiguration = new Properties();
             // for PXF upgrades where jdbc-site template has not been updated, make sure there're sensible defaults
@@ -368,6 +367,12 @@ public class JdbcBasePlugin extends BasePlugin {
             // apply values read from the template
             poolConfiguration.putAll(getPropsWithPrefix(configuration, JDBC_CONNECTION_POOL_PROPERTY_PREFIX));
 
+            LOG.debug("Connection pool is enabled (maximumPoolSize={}, connectionTimeout={}, idleTimeout={}, minimumIdle={})",
+                    poolConfiguration.setProperty("maximumPoolSize"),
+                    poolConfiguration.setProperty("connectionTimeout"),
+                    poolConfiguration.setProperty("idleTimeout"),
+                    poolConfiguration.setProperty("minimumIdle"));
+
             // packaged Hive JDBC Driver does not support connection.isValid() method, so we need to force set
             // connectionTestQuery parameter in this case, unless already set by the user
             if (jdbcUrl.startsWith(HIVE_URL_PREFIX) && HIVE_DEFAULT_DRIVER_CLASS.equals(jdbcDriver) && poolConfiguration.getProperty("connectionTestQuery") == null) {
@@ -377,6 +382,10 @@ public class JdbcBasePlugin extends BasePlugin {
             // get the qualifier for connection pool, if configured. Might be used when connection session authorization is employed
             // to switch effective user once connection is established
             poolQualifier = configuration.get(JDBC_POOL_QUALIFIER_PROPERTY_NAME);
+        }
+        else
+        {
+            LOG.debug("Connection pool is not enabled");
         }
     }
 
