@@ -368,10 +368,10 @@ public class JdbcBasePlugin extends BasePlugin {
             poolConfiguration.putAll(getPropsWithPrefix(configuration, JDBC_CONNECTION_POOL_PROPERTY_PREFIX));
 
             LOG.debug("Connection pool is enabled (maximumPoolSize={}, connectionTimeout={}, idleTimeout={}, minimumIdle={})",
-                    poolConfiguration.setProperty("maximumPoolSize"),
-                    poolConfiguration.setProperty("connectionTimeout"),
-                    poolConfiguration.setProperty("idleTimeout"),
-                    poolConfiguration.setProperty("minimumIdle"));
+                    poolConfiguration.getProperty("maximumPoolSize"),
+                    poolConfiguration.getProperty("connectionTimeout"),
+                    poolConfiguration.getProperty("idleTimeout"),
+                    poolConfiguration.getProperty("minimumIdle"));
 
             // packaged Hive JDBC Driver does not support connection.isValid() method, so we need to force set
             // connectionTestQuery parameter in this case, unless already set by the user
