@@ -524,7 +524,7 @@ public class JdbcBasePlugin extends BasePlugin {
         }
     }
 
-    /**
+    /**xr
      * Close a JDBC connection
      *
      * @param connection connection to close

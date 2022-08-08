@@ -148,10 +148,10 @@ public class JdbcBasePluginTestInitialize {
         assertNull(getInternalState(plugin, "quoteColumns"));
         assertEquals(getInternalState(plugin, "DEFAULT_FETCH_SIZE"), getInternalState(plugin, "fetchSize"));
         assertNull(getInternalState(plugin, "queryTimeout"));
-        assertEquals(getInternalState(plugin, "DEFAULT_CONNECTION_POOL_MAXIMUM_SIZE"), getInternalState(plugin, "poolMaximumSize"));
-        assertEquals(getInternalState(plugin, "DEFAULT_CONNECTION_POOL_CONNECTION_TIMEOUT"), getInternalState(plugin, "poolConnectionTimeout"));
-        assertEquals(getInternalState(plugin, "DEFAULT_CONNECTION_POOL_IDLE_TIMEOUT"), getInternalState(plugin, "poolIdleTimeout"));
-        assertEquals(getInternalState(plugin, "DEFAULT_CONNECTION_POOL_MINIMUM_IDLE"), getInternalState(plugin, "poolMinimumIdle"));
+        assertNull(getInternalState(plugin, "poolMaximumSize"));
+        assertNull(getInternalState(plugin, "poolConnectionTimeout"));
+        assertNull(getInternalState(plugin, "poolIdleTimeout"));
+        assertNull(getInternalState(plugin, "poolMinimumIdle"));
     }
 
     @Test
