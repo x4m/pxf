@@ -366,6 +366,7 @@ public class JdbcBasePlugin extends BasePlugin {
             poolConfiguration.setProperty("minimumIdle", String.valueOf(DEFAULT_CONNECTION_POOL_MINIMUM_IDLE));
             // apply values read from the template
             poolConfiguration.putAll(getPropsWithPrefix(configuration, JDBC_CONNECTION_POOL_PROPERTY_PREFIX));
+            // load pool overrides if provided by LOCATION
             if (poolMaximumSize != null)
                 poolConfiguration.setProperty("maximumPoolSize", String.valueOf(poolMaximumSize));
             if (poolConnectionTimeout != null)
@@ -524,7 +525,7 @@ public class JdbcBasePlugin extends BasePlugin {
         }
     }
 
-    /**xr
+    /**
      * Close a JDBC connection
      *
      * @param connection connection to close

@@ -150,6 +150,8 @@ To disable or enable a thread pool and set the pool size, create the PXF externa
 - `POOL_SIZE=1` - disable thread pooling
 - `POOL_SIZE=(n>1)`- set the `POOL_SIZE` to `n`
 
+JDBC offers connection pooling that is configured in `jdbc-site.xml`. However pool settings can by overriden by `CONNECTION_POOL_MAXIMUM_SIZE`, `CONNECTION_POOL_CONNECTION_TIMEOUT`, `CONNECTION_POOL_IDLE_TIMEOUT` and `CONNECTION_POOL_MINIMUM_IDLE`. Keep in mind that different settings will create distinct pool. E.g. if one URI uses  `CONNECTION_POOL_MAXIMUM_SIZE == 1` and other URI uses `CONNECTION_POOL_MAXIMUM_SIZE == 2` there will be 2 separate pools with total maximum number of connections 3.
+
 #### <a id="partitioning"></a>Partitioning (Read)
 
 The PXF JDBC connector supports simultaneous read access from PXF instances running on multiple Greenplum Database hosts to an external SQL table. This feature is referred to as partitioning. Read partitioning is not enabled by default. To enable read partitioning, set the `PARTITION_BY`, `RANGE`, and `INTERVAL` custom options when you create the PXF external table.
